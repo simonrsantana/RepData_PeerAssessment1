@@ -114,26 +114,6 @@ So far we've been using the "date" data column in the original data frame as a f
 
 ```r
 library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 imputed$date <- as.POSIXct(imputed$date, "%Y-%m-%d")
 
 # Introduce the new column in the data frame
