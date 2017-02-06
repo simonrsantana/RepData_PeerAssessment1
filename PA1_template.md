@@ -1,13 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-      html_document:
-      keep_md: true
----
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ## Loading and preprocessing the data
 
@@ -57,7 +48,7 @@ As expected from the plot, they are very similar.
 ## What is the average daily activity pattern?
 
 Create a new data frame to contain the new information that we have to analyze aggregating the information of number of steps per 5 min time period.
-```{r}
+```{r daily_activity}
 stepsperday <- aggregate(x=list(steps=activity$steps),
                          by=list(time=activity$interval), FUN=mean, na.rm=TRUE)
 plot(stepsperday$time, stepsperday$steps, type = "l", 
@@ -84,7 +75,7 @@ imputed$steps[is.na(imputed$steps)] <-
 ```
 
 Calculate how many steps are taken now per time interval and plot it into a histogram
-```{r}
+```{r imputed_data}
 imputed_steps <- aggregate(steps ~ date, data = imputed, FUN = sum, na.rm = T)
 imputed_mean <- mean(imputed_steps$steps)
 imputed_median <- median(imputed_steps$steps)
@@ -110,7 +101,7 @@ Therefore, by introducing the missing values, the mean and the median coincide i
 ## Are there differences in activity patterns between weekdays and weekends?
 
 So far we've been using the "date" data column in the original data frame as a factor. In order to use it as a date data format we must convert it. We then create a new column containing if each day is a weekend or a weekday.
-```{r, results=F, echo=F}
+```{r}
 library(dplyr)
 imputed$date <- as.POSIXct(imputed$date, "%Y-%m-%d")
 
@@ -120,7 +111,7 @@ imputed <- mutate(imputed, week_part = ifelse(weekdays(imputed$date) == "sábado
 ```
 
 Aggregate the data and plot the results to compare graphically the weekends and weekdays
-```{r}
+```{r compared_data}
 stepsint <- aggregate(steps ~ interval + week_part, imputed, mean)
 
 # Load ggplot2
