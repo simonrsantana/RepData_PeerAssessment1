@@ -1,24 +1,16 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-      html_document:
-      keep_md: true
----
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ## Loading and preprocessing the data
 
 First we download the data and unzip it in the working directory (if needed) and read it for further use
-```{r preprocessing}
+
+```r
 dataurl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 if (!file.exists("project1.zip")){
       download.file(dataurl, "project1data.zip")
 } 
 if (!file.exists("activity.csv")) { 
-      unzip("project1data.zip") 
+      unzip("exdata_data_NEI_data.zip") 
 }
 
 # Read the data
@@ -29,7 +21,8 @@ activity <- read.csv("activity.csv", header = T)
 ## What is mean total number of steps taken per day?
 
 To see how many steps per day there are we can do a histogram as the following
-```{r steps_per_day}
+
+```r
 daily_steps <- aggregate(steps ~ date, data = activity, FUN = sum, na.rm = T)
 daily_mean <- mean(daily_steps$steps)
 daily_median <- median(daily_steps$steps)
@@ -43,40 +36,45 @@ abline(v = min(daily_steps$steps), col = "darkgreen", lwd = 1)
 abline(v = max(daily_steps$steps), col = "darkblue", lwd = 1)
 legend(x = "topright", col = c("darkred", "magenta", "darkgreen", "darkblue"), 
        c("Mean", "Median", "Minimum", "Maximum"),  lwd = 1)
-
 ```
+
+![plot of chunk steps_per_day](figure/steps_per_day-1.png)
 
 
 The values of the mean and the median are so close to one another that both of them lines overlap in the plot. To compare their respective values we print explicitly both of them
 
-* Mean = `r daily_mean`
-* Median = `r daily_median`
+* Mean = 1.0766189 &times; 10<sup>4</sup>
+* Median = 10765
 
 As expected from the plot, they are very similar.
 
 ## What is the average daily activity pattern?
 
 Create a new data frame to contain the new information that we have to analyze aggregating the information of number of steps per 5 min time period.
-```{r}
+
+```r
 stepsperday <- aggregate(x=list(steps=activity$steps),
                          by=list(time=activity$interval), FUN=mean, na.rm=TRUE)
 plot(stepsperday$time, stepsperday$steps, type = "l", 
      main = "Daily routine on number of steps", xlab = "Time period in 5 mins intervals", 
      ylab = "Average number of steps")
-
 ```
 
+![plot of chunk daily_activity](figure/daily_activity-1.png)
+
 We find the (median) maximum number of steps and on which 5-min interval is it
-```{r}
+
+```r
 max_step <- max(stepsperday$steps)
 time_max <- stepsperday$time[stepsperday$steps == max_step]
 ```
-The extremal value is `r max_step` (mean) steps in the 5-min interval `r time_max`.
+The extremal value is 206.1698113 (mean) steps in the 5-min interval 835.
 
 ## Imputing missing values
 
 Create the imputed data frame
-```{r}
+
+```r
 imputed <- activity   # Create a new data frame so we don't overwrite the original data
 meanint <- tapply(imputed$steps, imputed$interval, mean, na.rm=TRUE, simplify=TRUE)
 imputed$steps[is.na(imputed$steps)] <- 
@@ -84,7 +82,8 @@ imputed$steps[is.na(imputed$steps)] <-
 ```
 
 Calculate how many steps are taken now per time interval and plot it into a histogram
-```{r}
+
+```r
 imputed_steps <- aggregate(steps ~ date, data = imputed, FUN = sum, na.rm = T)
 imputed_mean <- mean(imputed_steps$steps)
 imputed_median <- median(imputed_steps$steps)
@@ -100,18 +99,41 @@ legend(x = "topright", col = c("darkred", "magenta", "darkgreen", "darkblue"),
        c("Mean", "Median", "Minimum", "Maximum"),  lwd = 1)
 ```
 
+![plot of chunk imputed_data](figure/imputed_data-1.png)
+
 Again, the mean and the median are indistinguishable in the plot. Their explicit values are:
 
-* Imputed data frame mean = `r imputed_mean`
-* Imputed data frame median = `r imputed_median`
+* Imputed data frame mean = 1.0766189 &times; 10<sup>4</sup>
+* Imputed data frame median = 1.0766189 &times; 10<sup>4</sup>
 
 Therefore, by introducing the missing values, the mean and the median coincide in the imputed data frame.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 So far we've been using the "date" data column in the original data frame as a factor. In order to use it as a date data format we must convert it. We then create a new column containing if each day is a weekend or a weekday.
-```{r, results=F, echo=F}
+
+```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 imputed$date <- as.POSIXct(imputed$date, "%Y-%m-%d")
 
 # Introduce the new column in the data frame
@@ -120,7 +142,8 @@ imputed <- mutate(imputed, week_part = ifelse(weekdays(imputed$date) == "sábado
 ```
 
 Aggregate the data and plot the results to compare graphically the weekends and weekdays
-```{r}
+
+```r
 stepsint <- aggregate(steps ~ interval + week_part, imputed, mean)
 
 # Load ggplot2
@@ -132,6 +155,8 @@ comparison <- ggplot(stepsint, aes(x=interval, y=steps, color = week_part)) +
   facet_wrap(~week_part, ncol = 1, nrow=2)
 print(comparison)
 ```
+
+![plot of chunk compared_data](figure/compared_data-1.png)
 
 From the plots we can deduce that, in general, the individuals walked more on the weekends than on weekdays, probably due to the lack of free time during working days in contrast with the free time available in the weekends.
 
